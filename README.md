@@ -26,6 +26,11 @@ To set up and run this application:
 
 ## Environment Variables
 
-TODO: Document environment variables.
+This application recognizes the following environment variables:
+
+* `NODE_ENV` = `production` to run in production mode, or `development` to run in development mode
+    * In development mode, the application runs without SSL files, and authentication can be bypassed
+* `SESSION_SECRET` = Private string to compute session hash
+* `PORT_NUMBER` = Port number on which to run the server
 
 

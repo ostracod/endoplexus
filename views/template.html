@@ -1,0 +1,18 @@
+<html>
+    <head>
+        <title>Endoplexus</title>
+        <script src="/javascript/client/global.js" type="module"></script>
+        {{#scripts}}
+            <script src="{{{.}}}" type="module"></script>
+        {{/scripts}}
+        <link type="text/css" rel="stylesheet" media="all" href="stylesheets/global.css" />
+        {{#stylesheets}}
+            <link type="text/css" rel="stylesheet" media="all" href="{{{.}}}" />
+        {{/stylesheets}}
+    </head>
+    <body>
+        <div id="content" style="width: {{contentWidth}}px;">
+            {{{content}}}
+        </div>
+    </body>
+</html>
