@@ -1,0 +1,6 @@
+node_modules
+dist
+.env
+ssl.key
+ssl.crt
+ssl.ca-bundle
