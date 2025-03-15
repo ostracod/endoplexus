@@ -1,5 +1,6 @@
 
 import * as fs from "fs";
+import * as pathUtils from "path";
 import * as http from "http";
 import * as https from "https";
 import express from "express";
@@ -9,8 +10,9 @@ import expressSession from "express-session";
 import logger from "morgan";
 import mustacheExpress from "mustache-express";
 import { TemplateParams, ExpressError } from "./server/types.js";
-import { publicPath, commonScriptsPath, clientScriptsPath, viewsPath, privateKeyPath, certificatePath, caBundlePath, isDevMode, sessionSecret, serverPortNumber } from "./server/constants.js";
+import { projectPath, viewsPath, isDevMode } from "./server/constants.js";
 import * as pageUtils from "./server/pageUtils.js";
+import * as dbUtils from "./server/dbUtils.js";
 import { router } from "./server/router.js";
 
 let isShuttingDown = false;
@@ -20,7 +22,7 @@ expressApp.use(bodyParser.json({ limit: "50mb" }));
 expressApp.use(bodyParser.urlencoded({ limit: "50mb", extended: false }));
 expressApp.use(cookieParser());
 expressApp.use(expressSession({
-    secret: sessionSecret,
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 },
@@ -33,6 +35,10 @@ if (isDevMode) {
     expressApp.use(logger("dev"));
 }
 
+const publicPath = pathUtils.join(projectPath, "public");
+const distPath = pathUtils.join(projectPath, "dist");
+const commonScriptsPath = pathUtils.join(distPath, "common");
+const clientScriptsPath = pathUtils.join(distPath, "client");
 expressApp.use(express.static(publicPath));
 expressApp.use("/javascript/common", express.static(commonScriptsPath));
 expressApp.use("/javascript/client", express.static(clientScriptsPath));
@@ -65,13 +71,18 @@ const shutdownServer = async () => {
     console.log("Shutting down...");
     isShuttingDown = true;
     // TODO: Persist server state before shutting down.
-
+    
+    dbUtils.closeDb();
     process.exit(0);
 };
 
 process.on("SIGTERM", shutdownServer);
 process.on("SIGINT", shutdownServer);
 
+const privateKeyPath = pathUtils.join(projectPath, "ssl.key");
+const certificatePath = pathUtils.join(projectPath, "ssl.crt");
+const caBundlePath = pathUtils.join(projectPath, "ssl.ca-bundle");
+const portNumber = parseInt(process.env.PORT_NUMBER, 10);
 let server;
 if (isDevMode) {
     server = http.createServer(expressApp);
@@ -82,7 +93,7 @@ if (isDevMode) {
         ca: fs.readFileSync(caBundlePath, "utf8"),
     }, expressApp);
 }
-const portNumber = parseInt(serverPortNumber, 10);
+dbUtils.initializeDb();
 server.listen(portNumber, () => {
     console.log(`Listening on port ${portNumber}.`);
 });
