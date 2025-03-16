@@ -14,7 +14,23 @@ export const initializeDb = () => {
         fs.mkdirSync(gameDataPath);
     }
     db = new Database(databasePath);
-    console.log(db.pragma("table_list"));
+    const tables = db.pragma("table_list") as { name: string }[];
+    const playersTableExists = tables.some((table) => (table.name === "Players"));
+    if (!playersTableExists) {
+        db.prepare(`CREATE TABLE Players (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            passwordHash TEXT NOT NULL,
+            emailAddress TEXT NOT NULL,
+            score INTEGER NOT NULL,
+            parentGridId INTEGER,
+            posX INTEGER,
+            posY INTEGER,
+            shield REAL NOT NULL,
+            inventoryItems TEXT NOT NULL
+        )`).run();
+        db.prepare("CREATE INDEX scoreIndex ON Players(score)").run();
+    }
 };
 
 export const closeDb = () => {
