@@ -26,4 +26,9 @@ export interface AccountRow {
     inventoryItems: string;
 }
 
+export interface SessionAccount {
+    username: number;
+    isGuest: boolean;
+}
+
 

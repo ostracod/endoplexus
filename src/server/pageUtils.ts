@@ -1,10 +1,10 @@
 
 import * as fs from "fs";
 import * as pathUtils from "path";
-import { Response } from "express";
+import { Request, Response } from "express";
 import Mustache from "mustache";
-import { PageOptions, TemplateParams } from "./types.js";
-import { viewsPath } from "./constants.js";
+import { PageOptions, TemplateParams, SessionAccount } from "./types.js";
+import { viewsPath, isDevMode } from "./constants.js";
 
 export const renderPage = (
     res: Response,
@@ -21,6 +21,37 @@ export const renderPage = (
         content,
         contentWidth: options.contentWidth ?? 700,
     });
+};
+
+export const getSessionAccount = (req: Request): SessionAccount | null => {
+    if (isDevMode) {
+        const { username } = req.query;
+        if (typeof username !== "undefined") {
+            req.session.username = username;
+        }
+    }
+    const { username, isGuest } = req.session;
+    return (typeof username === "undefined") ? null : { username, isGuest };
+};
+
+export const hasLoggedIn = (req: Request, allowGuest = false): boolean => {
+    const account = getSessionAccount(req);
+    if (account === null) {
+        return false;
+    }
+    return allowGuest ? true : !account.isGuest;
+};
+
+export const checkAuthentication = (
+    req: Request,
+    res: Response,
+    allowGuest = false,
+): boolean => {
+    if (hasLoggedIn(req, allowGuest)) {
+        return true;
+    }
+    res.redirect("/login");
+    return false;
 };
 
 

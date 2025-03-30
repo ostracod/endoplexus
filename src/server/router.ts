@@ -46,4 +46,44 @@ router.post("/createAccountAction", async (req, res) => {
     res.json({ success: true });
 });
 
+router.post("/loginAction", async (req, res) => {
+    const { username, password } = req.body;
+    const isGuest = (typeof password === "undefined");
+    if (!isGuest) {
+        const row = getDb().prepare("SELECT passwordHash FROM Accounts WHERE username = ?").get(username) as AccountRow;
+        if (typeof row === "undefined") {
+            res.json({
+                success: false,
+                message: "Could not find an account with the given username.",
+            });
+            return;
+        }
+        const hashMatches = await bcrypt.compare(password, row.passwordHash);
+        if (!hashMatches) {
+            res.json({
+                success: false,
+                message: "Incorrect password.",
+            });
+            return;
+        }
+    }
+    req.session.username = username;
+    req.session.isGuest = isGuest;
+    res.json({ success: true });
+});
+
+router.get("/menu", (req, res) => {
+    if (!pageUtils.checkAuthentication(req, res)) {
+        return;
+    }
+    res.send("TODO: Put menu here.");
+});
+
+router.get("/game", (req, res) => {
+    if (!pageUtils.checkAuthentication(req, res, true)) {
+        return;
+    }
+    res.send("TODO: Put game page here.");
+});
+
 
