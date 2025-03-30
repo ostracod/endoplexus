@@ -13,4 +13,17 @@ export interface ExpressError extends Error {
     status?: number;
 }
 
+export interface AccountRow {
+    id: number;
+    username: string;
+    passwordHash: string;
+    emailAddress: string;
+    score: number;
+    parentGridId?: number;
+    posX?: number;
+    posY?: number;
+    shield: number;
+    inventoryItems: string;
+}
+
 

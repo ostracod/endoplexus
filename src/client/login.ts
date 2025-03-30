@@ -1,9 +1,9 @@
 
-window.guestAccountLogIn = () => {
+window.submitGuestAccountForm = () => {
     alert("Guest account login!");
 };
 
-window.persistentAccountLogIn = () => {
+window.submitPersistentAccountForm = () => {
     alert("Persistent account login!");
 };
 

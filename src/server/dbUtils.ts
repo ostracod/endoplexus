@@ -9,15 +9,15 @@ const databasePath = pathUtils.join(gameDataPath, "database.sqlite3");
 
 let db: DbType;
 
-export const initializeDb = () => {
+export const initializeDb = (): void => {
     if (!fs.existsSync(gameDataPath)) {
         fs.mkdirSync(gameDataPath);
     }
     db = new Database(databasePath);
     const tables = db.pragma("table_list") as { name: string }[];
-    const playersTableExists = tables.some((table) => (table.name === "Players"));
+    const playersTableExists = tables.some((table) => (table.name === "Accounts"));
     if (!playersTableExists) {
-        db.prepare(`CREATE TABLE Players (
+        db.prepare(`CREATE TABLE Accounts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL,
             passwordHash TEXT NOT NULL,
@@ -29,11 +29,13 @@ export const initializeDb = () => {
             shield REAL NOT NULL,
             inventoryItems TEXT NOT NULL
         )`).run();
-        db.prepare("CREATE INDEX scoreIndex ON Players(score)").run();
+        db.prepare("CREATE INDEX accountScoreIndex ON Accounts(score)").run();
     }
 };
 
-export const closeDb = () => {
+export const getDb = (): DbType => db;
+
+export const closeDb = (): void => {
     db.close();
 };
 

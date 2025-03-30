@@ -3,8 +3,10 @@
     "version": "1.0.0",
     "type": "module",
     "dependencies": {
+        "@types/bcrypt": "^5.0.2",
         "@types/better-sqlite3": "^7.6.12",
         "@types/node": ">=22.0.0",
+        "bcrypt": "^5.1.1",
         "better-sqlite3": "^11.9.0",
         "body-parser": "^1.20.3",
         "cookie-parser": "^1.4.7",
@@ -17,6 +19,7 @@
     },
     "pnpm": {
         "onlyBuiltDependencies": [
+            "bcrypt",
             "better-sqlite3"
         ]
     }
