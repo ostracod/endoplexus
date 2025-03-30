@@ -90,6 +90,37 @@ router.get("/menu", (req, res) => {
     );
 });
 
+router.get("/changePassword", (req, res) => {
+    if (!pageUtils.checkAuthentication(req, res)) {
+        return;
+    }
+    pageUtils.renderPage(
+        res, "changePassword.html",
+        { scripts: ["/javascript/client/changePassword.js"] },
+    );
+});
+
+router.post("/changePasswordAction", async (req, res) => {
+    if (!pageUtils.checkAuthentication(req, res)) {
+        return;
+    }
+    const { oldPassword, newPassword } = req.body;
+    const { username } = pageUtils.getSessionAccount(req);
+    const row = getAccountRow(username);
+    const oldHashMatches = await bcrypt.compare(oldPassword, row.passwordHash);
+    if (!oldHashMatches) {
+        res.json({
+            success: false,
+            message: "Old password is incorrect",
+        });
+        return;
+    }
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+    getDb().prepare("UPDATE Accounts SET passwordHash = ? WHERE id = ?")
+        .run(newPasswordHash, row.id);
+    res.json({ success: true });
+});
+
 router.get("/game", (req, res) => {
     if (!pageUtils.checkAuthentication(req, res, true)) {
         return;
