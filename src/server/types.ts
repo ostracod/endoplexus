@@ -27,7 +27,7 @@ export interface AccountRow {
 }
 
 export interface SessionAccount {
-    username: number;
+    username: string;
     isGuest: boolean;
 }
 

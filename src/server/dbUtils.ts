@@ -2,6 +2,7 @@
 import * as fs from "fs";
 import * as pathUtils from "path";
 import Database, { Database as DbType } from "better-sqlite3";
+import { AccountRow } from "./types.js";
 import { projectPath } from "./constants.js";
 
 const gameDataPath = pathUtils.join(projectPath, "gameData");
@@ -34,6 +35,10 @@ export const initializeDb = (): void => {
 };
 
 export const getDb = (): DbType => db;
+
+export const getAccountRow = (username: string): AccountRow => (
+    db.prepare("SELECT * FROM Accounts WHERE username = ?").get(username) as AccountRow
+);
 
 export const closeDb = (): void => {
     db.close();

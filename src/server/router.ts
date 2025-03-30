@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import { AccountRow } from "./types.js";
 import { maxPlayerShield } from "./constants.js";
 import * as pageUtils from "./pageUtils.js";
-import { getDb } from "./dbUtils.js";
+import { getDb, getAccountRow } from "./dbUtils.js";
 
 export const router = express.Router();
 
@@ -50,7 +50,7 @@ router.post("/loginAction", async (req, res) => {
     const { username, password } = req.body;
     const isGuest = (typeof password === "undefined");
     if (!isGuest) {
-        const row = getDb().prepare("SELECT passwordHash FROM Accounts WHERE username = ?").get(username) as AccountRow;
+        const row = getAccountRow(username);
         if (typeof row === "undefined") {
             res.json({
                 success: false,
@@ -72,11 +72,22 @@ router.post("/loginAction", async (req, res) => {
     res.json({ success: true });
 });
 
+router.get("/logout", (req, res) => {
+    delete req.session.username;
+    delete req.session.isGuest;
+    res.redirect("/login");
+});
+
 router.get("/menu", (req, res) => {
     if (!pageUtils.checkAuthentication(req, res)) {
         return;
     }
-    res.send("TODO: Put menu here.");
+    const { username } = pageUtils.getSessionAccount(req);
+    const row = getAccountRow(username);
+    pageUtils.renderPage(
+        res, "menu.html", {},
+        { username, score: row.score },
+    );
 });
 
 router.get("/game", (req, res) => {
