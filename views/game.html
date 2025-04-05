@@ -1,0 +1,78 @@
+<div style="display: flex;">
+    <div>
+        <canvas id="gameCanvas"></canvas>
+        <h2>ENDOPLEXUS</h2>
+        <p>TODO: Put instructions here.</p>
+        <p>
+            {{#isGuestAccount}}
+            <button onclick="window.location='/logout';">Log Out</button>
+            {{/isGuestAccount}}
+            {{^isGuestAccount}}
+            <a href="/menu">Return to Menu</a>
+            {{/isGuestAccount}}
+        </p>
+    </div>
+    <div style="margin-left: 15px; flex-grow: 1;">
+        <div class="module" id="parentTilesModule">
+            <div class="moduleBar">
+                <div class="moduleTitle">
+                    Parent Tiles
+                </div>
+                <button class="moduleCloseButton" onclick="hideModule('parentTiles');">&#xD7;</button>
+                <br style="clear: both;" />
+            </div>
+            <p>
+                Content goes here
+            </p>
+        </div>
+        <div class="module" id="tileAttributesModule">
+            <div class="moduleBar">
+                <div class="moduleTitle">
+                    Tile Attributes
+                </div>
+                <button class="moduleCloseButton" onclick="hideModule('tileAttributes');">&#xD7;</button>
+                <br style="clear: both;" />
+            </div>
+            <p>
+                Content goes here
+            </p>
+        </div>
+        <div class="module" id="inventoryModule">
+            <div class="moduleBar">
+                <div class="moduleTitle">
+                    Inventory
+                </div>
+                <button class="moduleCloseButton" onclick="hideModule('inventory');">&#xD7;</button>
+                <br style="clear: both;" />
+            </div>
+            <p>
+                Content goes here
+            </p>
+        </div>
+        <div class="module" id="craftingModule">
+            <div class="moduleBar">
+                <div class="moduleTitle">
+                    Crafting
+                </div>
+                <button class="moduleCloseButton" onclick="hideModule('crafting');">&#xD7;</button>
+                <br style="clear: both;" />
+            </div>
+            <p>
+                Content goes here
+            </p>
+        </div>
+        <div class="module" id="tileHelpModule">
+            <div class="moduleBar">
+                <div class="moduleTitle">
+                    Tile Help
+                </div>
+                <button class="moduleCloseButton" onclick="hideModule('tileHelp');">&#xD7;</button>
+                <br style="clear: both;" />
+            </div>
+            <p>
+                Content goes here
+            </p>
+        </div>
+        <div id="moduleButtonsContainer"></div>
+    </div>
+</div>

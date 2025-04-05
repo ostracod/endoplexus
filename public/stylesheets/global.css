@@ -43,4 +43,8 @@ button:active, input[type="submit"]:active {
     background: #444444;
 }
 
+h2 {
+    font-size: 24px;
+}
+
 

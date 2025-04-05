@@ -8,6 +8,17 @@ import { getDb, getAccountRow } from "./dbUtils.js";
 
 export const router = express.Router();
 
+router.get("/", (req, res) => {
+    const account = pageUtils.getSessionAccount(req);
+    if (account === null) {
+        res.redirect("/login");
+    } else if (account.isGuest) {
+        res.redirect("/game");
+    } else {
+        res.redirect("/menu");
+    }
+});
+
 router.get("/login", (req, res) => {
     pageUtils.renderPage(
         res, "login.html",
@@ -125,7 +136,16 @@ router.get("/game", (req, res) => {
     if (!pageUtils.checkAuthentication(req, res, true)) {
         return;
     }
-    res.send("TODO: Put game page here.");
+    const account = pageUtils.getSessionAccount(req);
+    pageUtils.renderPage(
+        res, "game.html",
+        {
+            scripts: ["/javascript/client/game.js"],
+            stylesheets: ["/stylesheets/game.css"],
+            contentWidth: 1000,
+        },
+        { isGuestAccount: account.isGuest },
+    );
 });
 
 
