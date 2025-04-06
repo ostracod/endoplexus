@@ -3,9 +3,8 @@ import * as fs from "fs";
 import * as pathUtils from "path";
 import Database, { Database as DbType } from "better-sqlite3";
 import { AccountRow } from "./types.js";
-import { projectPath } from "./constants.js";
+import { gameDataPath } from "./constants.js";
 
-const gameDataPath = pathUtils.join(projectPath, "gameData");
 const databasePath = pathUtils.join(gameDataPath, "database.sqlite3");
 
 let db: DbType;

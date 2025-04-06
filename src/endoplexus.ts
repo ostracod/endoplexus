@@ -10,10 +10,11 @@ import expressSession from "express-session";
 import logger from "morgan";
 import mustacheExpress from "mustache-express";
 import { TemplateParams, ExpressError } from "./server/types.js";
-import { projectPath, viewsPath, isDevMode } from "./server/constants.js";
+import { projectPath, viewsPath, gameDataPath, isDevMode } from "./server/constants.js";
 import * as pageUtils from "./server/pageUtils.js";
 import * as dbUtils from "./server/dbUtils.js";
 import { router } from "./server/router.js";
+import { World } from "./server/world.js";
 
 let isShuttingDown = false;
 
@@ -64,29 +65,31 @@ expressApp.use((error: ExpressError, req, res, next) => {
     pageUtils.renderPage(res, "error.html", {}, params);
 });
 
+const worldPath = pathUtils.join(gameDataPath, "world.json");
+const world = new World(worldPath);
+
 const shutdownServer = async () => {
     if (isShuttingDown) {
         return;
     }
     console.log("Shutting down...");
     isShuttingDown = true;
-    // TODO: Persist server state before shutting down.
-    
     dbUtils.closeDb();
+    world.writeToFile();
     process.exit(0);
 };
 
 process.on("SIGTERM", shutdownServer);
 process.on("SIGINT", shutdownServer);
 
-const privateKeyPath = pathUtils.join(projectPath, "ssl.key");
-const certificatePath = pathUtils.join(projectPath, "ssl.crt");
-const caBundlePath = pathUtils.join(projectPath, "ssl.ca-bundle");
 const portNumber = parseInt(process.env.PORT_NUMBER, 10);
 let server;
 if (isDevMode) {
     server = http.createServer(expressApp);
 } else {
+    const privateKeyPath = pathUtils.join(projectPath, "ssl.key");
+    const certificatePath = pathUtils.join(projectPath, "ssl.crt");
+    const caBundlePath = pathUtils.join(projectPath, "ssl.ca-bundle");
     server = https.createServer({
         key: fs.readFileSync(privateKeyPath, "utf8"),
         cert: fs.readFileSync(certificatePath, "utf8"),

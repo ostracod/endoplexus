@@ -31,4 +31,22 @@ export interface SessionAccount {
     isGuest: boolean;
 }
 
+export type SimpleTileDbJson = number;
+
+export interface ComplexTileDbJson {
+    typeId: number;
+}
+
+export type TileDbJson = SimpleTileDbJson | ComplexTileDbJson;
+
+export interface GridJson {
+    width: number;
+    height: number;
+    tiles: TileDbJson[];
+}
+
+export interface WorldJson {
+    grid: GridJson;
+}
+
 
