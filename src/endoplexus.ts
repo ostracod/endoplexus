@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as pathUtils from "path";
 import * as http from "http";
 import * as https from "https";
-import express from "express";
+import { WebSocketExpress } from "websocket-express";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import expressSession from "express-session";
@@ -18,7 +18,7 @@ import { World } from "./server/world.js";
 
 let isShuttingDown = false;
 
-const expressApp = express();
+const expressApp = new WebSocketExpress();
 expressApp.use(bodyParser.json({ limit: "50mb" }));
 expressApp.use(bodyParser.urlencoded({ limit: "50mb", extended: false }));
 expressApp.use(cookieParser());
@@ -40,9 +40,9 @@ const publicPath = pathUtils.join(projectPath, "public");
 const distPath = pathUtils.join(projectPath, "dist");
 const commonScriptsPath = pathUtils.join(distPath, "common");
 const clientScriptsPath = pathUtils.join(distPath, "client");
-expressApp.use(express.static(publicPath));
-expressApp.use("/javascript/common", express.static(commonScriptsPath));
-expressApp.use("/javascript/client", express.static(clientScriptsPath));
+expressApp.use(WebSocketExpress.static(publicPath));
+expressApp.use("/javascript/common", WebSocketExpress.static(commonScriptsPath));
+expressApp.use("/javascript/client", WebSocketExpress.static(clientScriptsPath));
 expressApp.set("views", viewsPath);
 expressApp.engine("html", mustacheExpress());
 expressApp.use("/", router);
@@ -85,7 +85,7 @@ process.on("SIGINT", shutdownServer);
 const portNumber = parseInt(process.env.PORT_NUMBER, 10);
 let server;
 if (isDevMode) {
-    server = http.createServer(expressApp);
+    server = http.createServer();
 } else {
     const privateKeyPath = pathUtils.join(projectPath, "ssl.key");
     const certificatePath = pathUtils.join(projectPath, "ssl.crt");
@@ -94,8 +94,9 @@ if (isDevMode) {
         key: fs.readFileSync(privateKeyPath, "utf8"),
         cert: fs.readFileSync(certificatePath, "utf8"),
         ca: fs.readFileSync(caBundlePath, "utf8"),
-    }, expressApp);
+    });
 }
+expressApp.attach(server);
 dbUtils.initializeDb();
 server.listen(portNumber, () => {
     console.log(`Listening on port ${portNumber}.`);

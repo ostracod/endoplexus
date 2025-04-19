@@ -1,4 +1,11 @@
 
+declare module "express-session" {
+    interface SessionData {
+        username?: string;
+        isGuest?: boolean;
+    }
+}
+
 export interface PageOptions {
     scripts?: string[];
     stylesheets?: string[];

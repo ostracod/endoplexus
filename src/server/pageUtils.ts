@@ -27,7 +27,7 @@ export const getSessionAccount = (req: Request): SessionAccount | null => {
     if (isDevMode) {
         const { username } = req.query;
         if (typeof username !== "undefined") {
-            req.session.username = username;
+            req.session.username = username.toString();
             req.session.isGuest = false;
         }
     }

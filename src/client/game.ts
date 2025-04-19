@@ -1,4 +1,6 @@
 
+import { WsCommand } from "../common/types.js";
+
 const gameCanvasWidth = 1200;
 const gameCanvasHeight = 1200;
 const gameCanvasScale = 2;
@@ -6,6 +8,11 @@ const gameCanvasScale = 2;
 let gameCanvas: HTMLCanvasElement;
 let gameCanvasContext: CanvasRenderingContext2D;
 let modules: Module[] = [];
+let ws: WebSocket;
+let wsCommandsToSend: WsCommand[] = [];
+let wsCommandsToRepeat: WsCommand[];
+let lastWsSendTime = 0;
+let expectingWsResponse = false;
 
 class Module {
     name: string;
@@ -75,6 +82,34 @@ const hideModule = (name) => {
 
 window.hideModule = hideModule;
 
+const addWsCommand = (command: WsCommand): void => {
+    wsCommandsToSend.push(command);
+};
+
+const wsTimerEvent = (): void => {
+    if (expectingWsResponse) {
+        return;
+    }
+    const currentTime = Date.now() / 1000;
+    if (currentTime < lastWsSendTime + 0.25) {
+        return;
+    }
+    ws.send(JSON.stringify(wsCommandsToSend));
+    expectingWsResponse = true;
+    lastWsSendTime = currentTime;
+    wsCommandsToRepeat = wsCommandsToSend;
+    wsCommandsToSend = [];
+};
+
+const handleWsResponse = (commands: WsCommand[]): void => {
+    // TODO: Evaluate commands from the server.
+    console.log(commands);
+    // TODO: Repeat commands in wsCommandsToRepeat.
+    
+    wsCommandsToRepeat = [];
+    expectingWsResponse = false;
+};
+
 const initializeGame = () => {
     gameCanvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
     gameCanvas.width = gameCanvasWidth;
@@ -87,6 +122,18 @@ const initializeGame = () => {
     for (const module of modules) {
         module.initialize();
     }
+    
+    const wsProtocol = (window.location.protocol == "http:") ? "ws:" : "wss:";
+    const wsAddress = `${wsProtocol}//${window.location.hostname}:${window.location.port}/gameCommands`;
+    ws = new WebSocket(wsAddress);
+    ws.addEventListener("open", () => {
+        addWsCommand({ name: "getInitState" });
+        setInterval(wsTimerEvent, 50);
+    });
+    ws.addEventListener("message", (event: MessageEvent) => {
+        const commands = JSON.parse(event.data) as WsCommand[];
+        handleWsResponse(commands);
+    });
 };
 
 document.addEventListener("DOMContentLoaded", initializeGame);
