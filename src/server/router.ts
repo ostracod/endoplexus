@@ -1,11 +1,11 @@
 
 import { Router } from "websocket-express";
 import bcrypt from "bcrypt";
-import { WsCommand } from "../common/types.js";
 import { AccountRow } from "./types.js";
 import { maxPlayerShield } from "./constants.js";
 import * as pageUtils from "./pageUtils.js";
 import { getDb, getAccountRow } from "./dbUtils.js";
+import { WsManager } from "./wsManager.js";
 
 export const router = new Router();
 
@@ -154,12 +154,10 @@ router.ws("/gameCommands", async (req, res, next) => {
         next();
         return;
     }
+    const account = pageUtils.getSessionAccount(req);
     const ws = await res.accept();
-    ws.send(JSON.stringify([{ name: "bupkis" }]));
-    const message = await ws.nextMessage();
-    const commands = JSON.parse(message.data.toString()) as WsCommand[];
-    console.log(commands);
-    ws.close();
+    const wsManager = new WsManager(ws, account);
+    wsManager.run();
 });
 
 

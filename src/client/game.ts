@@ -13,6 +13,8 @@ let wsCommandsToSend: WsCommand[] = [];
 let wsCommandsToRepeat: WsCommand[];
 let lastWsSendTime = 0;
 let expectingWsResponse = false;
+let wsCommandHandlers = new Map<string, (command: WsCommand) => void>();
+let wsCommandRepeaters = new Map<string, (command: WsCommand) => void>();
 
 class Module {
     name: string;
@@ -102,13 +104,44 @@ const wsTimerEvent = (): void => {
 };
 
 const handleWsResponse = (commands: WsCommand[]): void => {
-    // TODO: Evaluate commands from the server.
-    console.log(commands);
-    // TODO: Repeat commands in wsCommandsToRepeat.
-    
+    for (const command of commands) {
+        const handler = wsCommandHandlers.get(command.name);
+        if (typeof handler === "undefined") {
+            throw new Error(`Unknown command name "${command.name}".`);
+        }
+        handler(command);
+    }
+    for (const command of wsCommandsToRepeat) {
+        const repeater = wsCommandRepeaters.get(command.name);
+        if (typeof repeater !== "undefined") {
+            repeater(command);
+        }
+    }
     wsCommandsToRepeat = [];
     expectingWsResponse = false;
 };
+
+const addWsCommandHandler = (
+    commandName: string,
+    handler: (command: WsCommand) => void,
+): void => {
+    wsCommandHandlers.set(commandName, handler);
+};
+
+const addWsCommandRepeater = (
+    commandName: string,
+    repeater: (command: WsCommand) => void,
+): void => {
+    wsCommandRepeaters.set(commandName, repeater);
+};
+
+addWsCommandHandler("bupkis", (command) => {
+    console.log("I am the bupkis command handler!");
+});
+
+addWsCommandRepeater("getInitState", (command) => {
+    console.log("I am the getInitState command repeater!");
+});
 
 const initializeGame = () => {
     gameCanvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
@@ -133,6 +166,10 @@ const initializeGame = () => {
     ws.addEventListener("message", (event: MessageEvent) => {
         const commands = JSON.parse(event.data) as WsCommand[];
         handleWsResponse(commands);
+    });
+    ws.addEventListener("error", (event: Event) => {
+        alert("Lost communication with the server. Please reload this page.");
+        ws.close();
     });
 };
 

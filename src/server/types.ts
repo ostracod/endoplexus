@@ -56,4 +56,8 @@ export interface WorldJson {
     grid: GridJson;
 }
 
+export interface WsMessage {
+    data: Buffer;
+}
+
 
