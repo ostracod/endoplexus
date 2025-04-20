@@ -84,8 +84,12 @@ const hideModule = (name) => {
 
 window.hideModule = hideModule;
 
-const addWsCommand = (command: WsCommand): void => {
+const sendWsCommand = (command: WsCommand): void => {
     wsCommandsToSend.push(command);
+};
+
+const finishWsRequest = (): void => {
+    sendWsCommand({ name: "getUpdates" });
 };
 
 const wsTimerEvent = (): void => {
@@ -96,6 +100,7 @@ const wsTimerEvent = (): void => {
     if (currentTime < lastWsSendTime + 0.25) {
         return;
     }
+    finishWsRequest();
     ws.send(JSON.stringify(wsCommandsToSend));
     expectingWsResponse = true;
     lastWsSendTime = currentTime;
@@ -160,7 +165,7 @@ const initializeGame = () => {
     const wsAddress = `${wsProtocol}//${window.location.hostname}:${window.location.port}/gameCommands`;
     ws = new WebSocket(wsAddress);
     ws.addEventListener("open", () => {
-        addWsCommand({ name: "getInitState" });
+        sendWsCommand({ name: "getInitState" });
         setInterval(wsTimerEvent, 50);
     });
     ws.addEventListener("message", (event: MessageEvent) => {

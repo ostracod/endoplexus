@@ -7,12 +7,14 @@ export class WsManager {
     ws: ExtendedWebSocket;
     account: SessionAccount;
     commandHandlers: Map<string, (command: WsCommand) => void>;
+    commandsToSend: WsCommand[];
     
     constructor(ws: ExtendedWebSocket, account: SessionAccount) {
         this.ws = ws;
         this.account = account;
         this.commandHandlers = new Map();
         this.addCommandHandler("getInitState", this.handleGetInitState);
+        this.addCommandHandler("getUpdates", this.handleGetUpdates);
     }
     
     async run(): Promise<void> {
@@ -24,16 +26,21 @@ export class WsManager {
                 break;
             }
             const commands = JSON.parse(message.data.toString()) as WsCommand[];
+            this.commandsToSend = [];
             for (const command of commands) {
                 const handler = this.commandHandlers.get(command.name);
                 if (typeof handler === "undefined") {
                     throw new Error(`Unknown command name "${command.name}".`);
                 }
-                handler(command);
+                handler.call(this, command);
             }
-            this.ws.send(JSON.stringify([{ name: "bupkis" }]));
+            this.ws.send(JSON.stringify(this.commandsToSend));
         }
         this.ws.close();
+    }
+    
+    sendWsCommand(command: WsCommand): void {
+        this.commandsToSend.push(command);
     }
     
     addCommandHandler(commandName: string, handler: (command: WsCommand) => void): void {
@@ -42,6 +49,11 @@ export class WsManager {
     
     handleGetInitState(command: WsCommand): void {
         console.log("I am the getInitState command handler!");
+    }
+    
+    handleGetUpdates(command: WsCommand): void {
+        console.log("I am the getUpdates command handler!");
+        this.sendWsCommand({ name: "bupkis" });
     }
 }
 
