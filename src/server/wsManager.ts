@@ -48,11 +48,11 @@ export class WsManager {
     }
     
     handleGetInitState(command: WsCommand): void {
-        console.log("I am the getInitState command handler!");
+        // TODO: Implement.
     }
     
     handleGetUpdates(command: WsCommand): void {
-        console.log("I am the getUpdates command handler!");
+        // TODO: Implement.
         this.sendWsCommand({ name: "bupkis" });
     }
 }

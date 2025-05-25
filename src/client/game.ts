@@ -1,5 +1,6 @@
 
 import { WsCommand } from "../common/types.js";
+import { sprites, loadAllSprites } from "./sprite.js";
 
 const gameCanvasWidth = 1200;
 const gameCanvasHeight = 1200;
@@ -141,14 +142,20 @@ const addWsCommandRepeater = (
 };
 
 addWsCommandHandler("bupkis", (command) => {
-    console.log("I am the bupkis command handler!");
+    // Do nothing.
 });
 
-addWsCommandRepeater("getInitState", (command) => {
-    console.log("I am the getInitState command repeater!");
-});
+const clearGameCanvas = () => {
+    gameCanvasContext.fillStyle = "#FFFFFF";
+    gameCanvasContext.fillRect(0, 0, gameCanvasWidth, gameCanvasHeight);
+};
 
-const initializeGame = () => {
+const timerEvent = () => {
+    clearGameCanvas();
+    sprites.ball[0].draw(gameCanvasContext, { x: 20, y: 20 }, 8);
+};
+
+const initializeGame = async () => {
     gameCanvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
     gameCanvas.width = gameCanvasWidth;
     gameCanvas.height = gameCanvasHeight;
@@ -156,10 +163,13 @@ const initializeGame = () => {
     gameCanvas.style.height = gameCanvasHeight / gameCanvasScale + "px";
     gameCanvas.style.border = "3px #AAAAAA solid";
     gameCanvasContext = gameCanvas.getContext("2d");
+    gameCanvasContext.imageSmoothingEnabled = false;
     
     for (const module of modules) {
         module.initialize();
     }
+    
+    await loadAllSprites();
     
     const wsProtocol = (window.location.protocol == "http:") ? "ws:" : "wss:";
     const wsAddress = `${wsProtocol}//${window.location.hostname}:${window.location.port}/gameCommands`;
@@ -176,6 +186,8 @@ const initializeGame = () => {
         alert("Lost communication with the server. Please reload this page.");
         ws.close();
     });
+    
+    setInterval(timerEvent, 50);
 };
 
 document.addEventListener("DOMContentLoaded", initializeGame);
