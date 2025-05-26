@@ -1,6 +1,6 @@
 
 import { WsCommand } from "../common/types.js";
-import { sprites, loadAllSprites } from "./sprite.js";
+import { tileSprites, tubeSprites, portSprites, iconSprites, loadAllSprites } from "./sprite.js";
 
 const gameCanvasWidth = 1200;
 const gameCanvasHeight = 1200;
@@ -152,7 +152,22 @@ const clearGameCanvas = () => {
 
 const timerEvent = () => {
     clearGameCanvas();
-    sprites.ball[0].draw(gameCanvasContext, { x: 20, y: 20 }, 8);
+    
+    tileSprites.ball.draw(gameCanvasContext, { x: 20, y: 20 }, 8);
+    iconSprites.face.draw(gameCanvasContext, { x: 23, y: 23 }, 8);
+    portSprites.active[1][3].draw(gameCanvasContext, { x: 26, y: 23 }, 8);
+    
+    tileSprites.square[3].draw(gameCanvasContext, { x: 40, y: 20 }, 8);
+    iconSprites.bitwiseAnd.draw(gameCanvasContext, { x: 43, y: 23 }, 8);
+    portSprites.passive[0][1].draw(gameCanvasContext, { x: 43, y: 20 }, 8);
+    portSprites.passive[1][2].draw(gameCanvasContext, { x: 46, y: 23 }, 8);
+    portSprites.passive[2][0].draw(gameCanvasContext, { x: 43, y: 26 }, 8);
+    
+    tubeSprites[2][1].draw(gameCanvasContext, { x: 20, y: 40 }, 8);
+    portSprites.activeTube[1].draw(gameCanvasContext, { x: 26, y: 43 }, 8);
+    
+    tubeSprites[2][0].draw(gameCanvasContext, { x: 40, y: 40 }, 8);
+    portSprites.activeTube[1].draw(gameCanvasContext, { x: 46, y: 43 }, 8);
 };
 
 const initializeGame = async () => {

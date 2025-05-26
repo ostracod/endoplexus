@@ -4,6 +4,12 @@ export interface Pos {
     y: number;
 }
 
+export interface Color {
+    r: number;
+    g: number;
+    b: number;
+}
+
 export interface WsCommand {
     name: string;
 }
