@@ -1,13 +1,13 @@
 
-import { WsCommand } from "../common/types.js";
-import { tileSprites, tubeSprites, portSprites, iconSprites, loadAllSprites } from "./sprite.js";
+import { Pos, WsCommand, NearbyTilesCommand } from "../common/types.js";
+import { PixelCanvas, tileSprites, tubeSprites, portSprites, iconSprites, loadAllSprites } from "./sprite.js";
+import { Tile, emptyTile, jsonToTile } from "./tile.js";
 
-const gameCanvasWidth = 1200;
-const gameCanvasHeight = 1200;
+const gameCanvasWidth = 1170;
+const gameCanvasHeight = 1170;
 const gameCanvasScale = 2;
 
-let gameCanvas: HTMLCanvasElement;
-let gameCanvasContext: CanvasRenderingContext2D;
+let gameCanvas: PixelCanvas;
 let modules: Module[] = [];
 let ws: WebSocket;
 let wsCommandsToSend: WsCommand[] = [];
@@ -16,6 +16,10 @@ let lastWsSendTime = 0;
 let expectingWsResponse = false;
 let wsCommandHandlers = new Map<string, (command: WsCommand) => void>();
 let wsCommandRepeaters = new Map<string, (command: WsCommand) => void>();
+let cameraPos: Pos = { x: 0, y: 0 };
+let nearbyTiles: Tile[] = [];
+let nearbyTilesWidth: number = 0;
+let nearbyTilesHeight: number = 0;
 
 class Module {
     name: string;
@@ -25,7 +29,7 @@ class Module {
     buttonTag: HTMLButtonElement;
     isVisible: boolean;
     
-    constructor(name, displayName, shouldShowOnLoad = false) {
+    constructor(name: string, displayName: string, shouldShowOnLoad: boolean = false) {
         this.name = name;
         this.displayName = displayName;
         this.shouldShowOnLoad = shouldShowOnLoad;
@@ -34,19 +38,19 @@ class Module {
         modules.push(this);
     }
     
-    show() {
+    show(): void {
         this.tag.style.display = "block";
         this.buttonTag.className = "visibleModuleButton";
         this.isVisible = true;
     }
     
-    hide() {
+    hide(): void {
         this.tag.style.display = "none";
         this.buttonTag.className = "hiddenModuleButton";
         this.isVisible = false;
     }
     
-    toggle() {
+    toggle(): void {
         if (this.isVisible) {
             this.hide();
         } else {
@@ -54,7 +58,7 @@ class Module {
         }
     }
     
-    initialize() {
+    initialize(): void {
         this.tag = document.getElementById(this.name + "Module");
         const containerTag = document.getElementById("moduleButtonsContainer");
         this.buttonTag = document.createElement("button");
@@ -77,9 +81,9 @@ new Module("inventory", "Inventory", true);
 new Module("crafting", "Crafting", true);
 new Module("tileHelp", "Tile Help");
 
-const getModule = (name) => modules.find((module) => (module.name === name));
+const getModule = (name: string): Module => modules.find((module) => (module.name === name));
 
-const hideModule = (name) => {
+const hideModule = (name: string): void => {
     getModule(name).hide();
 }
 
@@ -141,45 +145,63 @@ const addWsCommandRepeater = (
     wsCommandRepeaters.set(commandName, repeater);
 };
 
-addWsCommandHandler("nearbyTiles", (command) => {
-    // TODO: Handle the command.
-    console.log(command);
+addWsCommandHandler("nearbyTiles", (command: NearbyTilesCommand) => {
+    nearbyTiles = [];
+    const gridData = command.grid;
+    for (const tileData of gridData.tiles) {
+        const tile = jsonToTile(tileData);
+        nearbyTiles.push(tile);
+    }
+    nearbyTilesWidth = gridData.width;
+    nearbyTilesHeight = gridData.height;
 });
 
-const clearGameCanvas = () => {
-    gameCanvasContext.fillStyle = "#FFFFFF";
-    gameCanvasContext.fillRect(0, 0, gameCanvasWidth, gameCanvasHeight);
+const clearGameCanvas = (): void => {
+    gameCanvas.context.fillStyle = "#FFFFFF";
+    gameCanvas.context.fillRect(0, 0, gameCanvasWidth, gameCanvasHeight);
 };
 
-const timerEvent = () => {
+const getNearbyTileIndex = (pos: Pos): number | null => {
+    if (pos.x >= 0 && pos.x < nearbyTilesWidth && pos.y >= 0 && pos.y < nearbyTilesHeight) {
+        return pos.x + pos.y * nearbyTilesWidth;
+    } else {
+        return null;
+    }
+};
+
+const getNearbyTile = (pos: Pos): Tile => {
+    const index = getNearbyTileIndex(pos);
+    // TODO: Return missing tile when pos is out of bounds.
+    return (index === null) ? emptyTile : nearbyTiles[index];
+};
+
+const drawNearbyTiles = (): void => {
+    const offset: Pos = { x: 0, y: 0 };
+    const pos: Pos = { x: 0, y: 0 };
+    for (offset.y = 0; offset.y < nearbyTilesHeight; offset.y++) {
+        pos.y = cameraPos.y + offset.y;
+        for (offset.x = 0; offset.x < nearbyTilesWidth; offset.x++) {
+            pos.x = cameraPos.x + offset.x;
+            const tile = getNearbyTile(pos);
+            tile.draw(gameCanvas, offset);
+        }
+    }
+};
+
+const timerEvent = (): void => {
     clearGameCanvas();
-    
-    tileSprites.ball.draw(gameCanvasContext, { x: 20, y: 20 }, 8);
-    iconSprites.face.draw(gameCanvasContext, { x: 23, y: 23 }, 8);
-    portSprites.active[1][3].draw(gameCanvasContext, { x: 26, y: 23 }, 8);
-    
-    tileSprites.square[3].draw(gameCanvasContext, { x: 40, y: 20 }, 8);
-    iconSprites.bitwiseAnd.draw(gameCanvasContext, { x: 43, y: 23 }, 8);
-    portSprites.passive[0][1].draw(gameCanvasContext, { x: 43, y: 20 }, 8);
-    portSprites.passive[1][2].draw(gameCanvasContext, { x: 46, y: 23 }, 8);
-    portSprites.passive[2][0].draw(gameCanvasContext, { x: 43, y: 26 }, 8);
-    
-    tubeSprites[2][1].draw(gameCanvasContext, { x: 20, y: 40 }, 8);
-    portSprites.activeTube[1].draw(gameCanvasContext, { x: 26, y: 43 }, 8);
-    
-    tubeSprites[2][0].draw(gameCanvasContext, { x: 40, y: 40 }, 8);
-    portSprites.activeTube[1].draw(gameCanvasContext, { x: 46, y: 43 }, 8);
+    drawNearbyTiles();
 };
 
-const initializeGame = async () => {
-    gameCanvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
-    gameCanvas.width = gameCanvasWidth;
-    gameCanvas.height = gameCanvasHeight;
-    gameCanvas.style.width = gameCanvasWidth / gameCanvasScale + "px";
-    gameCanvas.style.height = gameCanvasHeight / gameCanvasScale + "px";
-    gameCanvas.style.border = "3px #AAAAAA solid";
-    gameCanvasContext = gameCanvas.getContext("2d");
-    gameCanvasContext.imageSmoothingEnabled = false;
+const initializeGame = async (): Promise<void> => {
+    const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
+    canvas.width = gameCanvasWidth;
+    canvas.height = gameCanvasHeight;
+    canvas.style.width = gameCanvasWidth / gameCanvasScale + "px";
+    canvas.style.height = gameCanvasHeight / gameCanvasScale + "px";
+    canvas.style.border = "3px #AAAAAA solid";
+    gameCanvas = new PixelCanvas(canvas, 6);
+    gameCanvas.context.imageSmoothingEnabled = false;
     
     for (const module of modules) {
         module.initialize();

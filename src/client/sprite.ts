@@ -11,7 +11,19 @@ const loadImage = (src: string): Promise<HTMLImageElement> => new Promise((resol
     image.src = src;
 });
 
-class Sprite {
+export class PixelCanvas {
+    htmlElement: HTMLCanvasElement;
+    context: CanvasRenderingContext2D;
+    scale: number;
+    
+    constructor(htmlElement: HTMLCanvasElement, scale: number) {
+        this.htmlElement = htmlElement;
+        this.context = this.htmlElement.getContext("2d");
+        this.scale = scale;
+    }
+}
+
+export class Sprite {
     sheetIndex: number;
     palette: Color[];
     width: number;
@@ -26,12 +38,12 @@ class Sprite {
         this.image = null;
     }
     
-    draw(canvasContext: CanvasRenderingContext2D, pos: Pos, scale: number): void {
+    draw(canvas: PixelCanvas, pos: Pos): void {
         if (this.image !== null) {
-            canvasContext.drawImage(
+            canvas.context.drawImage(
                 this.image,
-                pos.x * scale, pos.y * scale,
-                this.width * scale, this.height * scale,
+                pos.x * canvas.scale, pos.y * canvas.scale,
+                this.width * canvas.scale, this.height * canvas.scale,
             );
         }
     }

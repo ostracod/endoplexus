@@ -1,5 +1,5 @@
 
-export const makeRequest = async (path, data) => {
+export const makeRequest = async (path: string, data: any): Promise<any> => {
     const response = await fetch(path, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

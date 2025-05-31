@@ -54,7 +54,7 @@ export class WsManager {
     
     handleGetUpdates(command: WsCommand): void {
         // TODO: Use player position to extract subgrid.
-        const grid = world.grid.getSubgrid({ x: 0, y: 0 }, 10, 10);
+        const grid = world.grid.getSubgrid({ x: 0, y: 0 }, 15, 15);
         const response: NearbyTilesCommand = {
             name: "nearbyTiles",
             grid: grid.toClientJson(),

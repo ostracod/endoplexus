@@ -5,3 +5,4 @@ ssl.key
 ssl.crt
 ssl.ca-bundle
 gameData
+.DS_Store

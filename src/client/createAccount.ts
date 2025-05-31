@@ -3,7 +3,7 @@ import { makeRequest } from "./commonUtils.js";
 
 let isCreatingAccount = false;
 
-const createAccount = async () => {
+const createAccount = async (): Promise<void> => {
     const usernameTag = document.getElementById("username") as HTMLInputElement;
     const passwordTag = document.getElementById("password") as HTMLInputElement;
     const passwordConfirmationTag = document.getElementById("passwordConfirmation") as HTMLInputElement;
@@ -42,7 +42,7 @@ const createAccount = async () => {
     window.location = "/login" as (string & Location);
 };
 
-window.submitForm = async () => {
+window.submitForm = async (): Promise<void> => {
     if (isCreatingAccount) {
         return;
     }

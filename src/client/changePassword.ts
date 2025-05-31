@@ -3,7 +3,7 @@ import { makeRequest } from "./commonUtils.js";
 
 let isChangingPassword = false;
 
-const changePassword = async () => {
+const changePassword = async (): Promise<void> => {
     const oldPasswordTag = document.getElementById("oldPassword") as HTMLInputElement;
     const newPasswordTag = document.getElementById("newPassword") as HTMLInputElement;
     const passwordConfirmationTag = document.getElementById("passwordConfirmation") as HTMLInputElement;
@@ -30,7 +30,7 @@ const changePassword = async () => {
     window.location = "/menu" as (string & Location);
 };
 
-window.submitForm = async () => {
+window.submitForm = async (): Promise<void> => {
     if (isChangingPassword) {
         return;
     }

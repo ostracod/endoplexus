@@ -3,7 +3,7 @@ import { makeRequest } from "./commonUtils.js";
 
 let isLoggingIn = false;
 
-const logInGuestAccount = async () => {
+const logInGuestAccount = async (): Promise<void> => {
     const usernameTag = document.getElementById("guestUsername") as HTMLInputElement;
     const username = usernameTag.value;
     if (username.length <= 0) {
@@ -15,7 +15,7 @@ const logInGuestAccount = async () => {
     window.location = "/game" as (string & Location);
 };
 
-const logInPersistentAccount = async () => {
+const logInPersistentAccount = async (): Promise<void> => {
     const usernameTag = document.getElementById("username") as HTMLInputElement;
     const passwordTag = document.getElementById("password") as HTMLInputElement;
     const username = usernameTag.value;
@@ -34,7 +34,7 @@ const logInPersistentAccount = async () => {
     window.location = "/menu" as (string & Location);
 };
 
-window.submitGuestAccountForm = async () => {
+window.submitGuestAccountForm = async (): Promise<void> => {
     if (isLoggingIn) {
         return;
     }
@@ -50,7 +50,7 @@ window.submitGuestAccountForm = async () => {
     isLoggingIn = false;
 };
 
-window.submitPersistentAccountForm = async () => {
+window.submitPersistentAccountForm = async (): Promise<void> => {
     if (isLoggingIn) {
         return;
     }
