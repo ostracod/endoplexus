@@ -46,14 +46,14 @@ export interface ComplexTileDbJson {
 
 export type TileDbJson = SimpleTileDbJson | ComplexTileDbJson;
 
-export interface GridJson {
+export interface GridDbJson {
     width: number;
     height: number;
     tiles: TileDbJson[];
 }
 
 export interface WorldJson {
-    grid: GridJson;
+    grid: GridDbJson;
 }
 
 export interface WsMessage {

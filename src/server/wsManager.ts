@@ -1,7 +1,8 @@
 
 import { ExtendedWebSocket } from "websocket-express";
-import { WsCommand } from "../common/types.js";
+import { Pos, WsCommand, NearbyTilesCommand } from "../common/types.js";
 import { SessionAccount, WsMessage } from "./types.js";
+import { world } from "./world.js";
 
 export class WsManager {
     ws: ExtendedWebSocket;
@@ -52,8 +53,13 @@ export class WsManager {
     }
     
     handleGetUpdates(command: WsCommand): void {
-        // TODO: Implement.
-        this.sendWsCommand({ name: "bupkis" });
+        // TODO: Use player position to extract subgrid.
+        const grid = world.grid.getSubgrid({ x: 0, y: 0 }, 10, 10);
+        const response: NearbyTilesCommand = {
+            name: "nearbyTiles",
+            grid: grid.toClientJson(),
+        };
+        this.sendWsCommand(response);
     }
 }
 

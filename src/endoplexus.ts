@@ -10,11 +10,11 @@ import expressSession from "express-session";
 import logger from "morgan";
 import mustacheExpress from "mustache-express";
 import { TemplateParams, ExpressError } from "./server/types.js";
-import { projectPath, viewsPath, gameDataPath, isDevMode } from "./server/constants.js";
+import { projectPath, viewsPath, isDevMode } from "./server/constants.js";
 import * as pageUtils from "./server/pageUtils.js";
 import * as dbUtils from "./server/dbUtils.js";
 import { router } from "./server/router.js";
-import { World } from "./server/world.js";
+import { world } from "./server/world.js";
 
 let isShuttingDown = false;
 
@@ -65,8 +65,8 @@ expressApp.use((error: ExpressError, req, res, next) => {
     pageUtils.renderPage(res, "error.html", {}, params);
 });
 
-const worldPath = pathUtils.join(gameDataPath, "world.json");
-const world = new World(worldPath);
+dbUtils.initializeDb();
+world.initialize();
 
 const shutdownServer = async () => {
     if (isShuttingDown) {
@@ -97,7 +97,6 @@ if (isDevMode) {
     });
 }
 expressApp.attach(server);
-dbUtils.initializeDb();
 server.listen(portNumber, () => {
     console.log(`Listening on port ${portNumber}.`);
 });

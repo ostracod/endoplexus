@@ -1,6 +1,8 @@
 
 import * as fs from "fs";
+import * as pathUtils from "path";
 import { WorldJson } from "./types.js";
+import { gameDataPath } from "./constants.js";
 import { Tile, emptyTile, matterite, energite } from "./tile.js";
 import { Grid, jsonToGrid } from "./grid.js";
 
@@ -10,11 +12,17 @@ export class World {
     
     constructor(filePath) {
         this.filePath = filePath;
+    }
+    
+    initialize() {
         if (fs.existsSync(this.filePath)) {
             this.readFromFile();
         } else {
             this.initNewContent();
         }
+        // TODO: Use world wall tile instead of empty tile for border.
+        this.grid.borderTile = emptyTile;
+        this.grid.exteriorTile = emptyTile;
     }
     
     readFromFile(): void {
@@ -28,7 +36,7 @@ export class World {
         const tiles: Tile[] = [];
         while (tiles.length < targetLength) {
             let tile: Tile;
-            if (Math.random() < 0.02) {
+            if (Math.random() < 0.1) {
                 tile = (Math.random() < 0.5) ? matterite : energite;
             } else {
                 tile = emptyTile;
@@ -40,10 +48,13 @@ export class World {
     
     writeToFile(): void {
         const worldData: WorldJson = {
-            grid: this.grid.toJson(),
+            grid: this.grid.toDbJson(),
         };
         fs.writeFileSync(this.filePath, JSON.stringify(worldData));
     }
 }
+
+const worldPath = pathUtils.join(gameDataPath, "world.json");
+export const world = new World(worldPath);
 
 

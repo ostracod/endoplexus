@@ -141,8 +141,9 @@ const addWsCommandRepeater = (
     wsCommandRepeaters.set(commandName, repeater);
 };
 
-addWsCommandHandler("bupkis", (command) => {
-    // Do nothing.
+addWsCommandHandler("nearbyTiles", (command) => {
+    // TODO: Handle the command.
+    console.log(command);
 });
 
 const clearGameCanvas = () => {
